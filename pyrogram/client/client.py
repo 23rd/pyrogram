@@ -1282,6 +1282,32 @@ class Client:
             else:
                 return r
 
+    def upload_video(self, chat_id: int or str, video: str, thumbPhoto: str, dur: int, wi: int, he: int):
+        file1 = self.save_file(video)
+        file2 = self.save_file(thumbPhoto)
+
+        file1 = self.send(
+            functions.messages.UploadMedia(
+                peer=self.resolve_peer(chat_id),
+                media=types.InputMediaUploadedDocument(
+                    file=file1,
+                    thumb=file2,
+                    mime_type=mimetypes.types_map[".mp4"],
+                    attributes=[
+                        types.DocumentAttributeVideo(
+                            duration=dur,
+                            w=wi,
+                            h=he,   
+                            supports_streaming=True
+                        ),
+                        types.DocumentAttributeFilename(os.path.basename(video))
+                    ]
+                )
+            )
+        )
+    
+        return file1
+
     def send_video(self,
                    chat_id: int or str,
                    video: str,
