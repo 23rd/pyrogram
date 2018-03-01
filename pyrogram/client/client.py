@@ -1282,6 +1282,52 @@ class Client:
             else:
                 return r
 
+        #send album which consists of already uploaded videos.
+        #if list is greater than 10 it will be splited on few albums
+        #example:
+        #client.send_ready_album("me", [[5458709274924410000, -8124907604856560000], [5458709274924410000, -6906788862270450000]])
+    def send_ready_album(self,
+                   chat_id: int or str,
+                   idAndHash: list,
+                   capt: str,
+                   parse_mode: str = ""):
+        #Use this method to send album.
+
+        style = self.html if parse_mode.lower() == "html" else self.markdown
+
+        cap=capt
+        listMedia = []
+        counter = 0
+        for i in idAndHash:
+            if counter == 10:
+                break
+            listMedia.append(
+                types.InputSingleMedia(
+                    types.InputMediaDocument(
+                        id=types.InputDocument(
+                            i[0], #id
+                            i[1] #hash
+                        )
+                    ),
+                    random_id=self.rnd_id(),
+                    **style.parse(cap)
+                )
+            )
+            counter += 1
+            cap=""
+
+        r = self.send(
+            functions.messages.SendMultiMedia(
+                peer=self.resolve_peer(chat_id),
+                multi_media=listMedia
+            )
+        )
+
+        if counter == 10:
+            self.send_ready_album(chat_id, idAndHash[10:], capt)
+
+        return r
+
     def upload_video(self, chat_id: int or str, video: str, thumbPhoto: str, dur: int, wi: int, he: int):
         file1 = self.save_file(video)
         file2 = self.save_file(thumbPhoto)
